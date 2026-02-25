@@ -310,29 +310,6 @@ vim.api.nvim_create_user_command('PeekOpen', require('peek').open, {})
 vim.api.nvim_create_user_command('PeekClose', require('peek').close, {})
 
 later(function()
-  -- Các plugin cần thiết cho việc gợi ý
-  add('hrsh7th/nvim-cmp')
-  add('hrsh7th/cmp-nvim-lsp')
-  add('hrsh7th/cmp-buffer')
-  add('hrsh7th/cmp-path')
-  add('saadparwaiz1/cmp_luasnip') -- Nếu bạn dùng luasnip/mini.snippets
-
-  local cmp = require('cmp')
-  cmp.setup({
-    mapping = cmp.mapping.preset.insert({
-      ['<C-Space>'] = cmp.mapping.complete(),
-      ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Nhấn Enter để chọn và tự động import
-      ['<Tab>'] = cmp.mapping.select_next_item(),
-    }),
-    sources = cmp.config.sources({
-      { name = 'nvim_lsp' },
-      { name = 'path' },
-      { name = 'buffer' },
-    })
-  })
-end)
-
-later(function()
   add('windwp/nvim-ts-autotag')
   require('nvim-ts-autotag').setup()
 end)
