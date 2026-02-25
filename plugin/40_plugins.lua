@@ -98,44 +98,7 @@ end)
 -- See note about 'mason.nvim' at the bottom of the file.
 --
 -- Neovim's team collects commonly used configurations for most language servers
--- inside 'neovim/nvim-lspconfig' plugin.
---
--- Add it now if file (and not 'mini.starter') is shown after startup.
-now_if_args(function()
-  add('neovim/nvim-lspconfig')
-  
-  local lspconfig = require('lspconfig')
-  local capabilities = vim.lsp.protocol.make_client_capabilities()
-  -- Nếu sau này bạn cài nvim-cmp, hãy thêm dòng này:
-  -- capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
-
-  -- Cấu hình vtsls cho React
-  lspconfig.vtsls.setup({
-    capabilities = capabilities,
-    settings = {
-      typescript = {
-        suggest = {
-          completeFunctionCalls = true,
-        },
-        updateImportsOnFileMove = { enabled = "always" },
-      },
-      javascript = {
-        suggest = {
-          completeFunctionCalls = true,
-        },
-        updateImportsOnFileMove = { enabled = "always" },
-      },
-    },
-  })
-  -- Use `:h vim.lsp.enable()` to automatically enable language server based on
-  -- the rules provided by 'nvim-lspconfig'.
-  -- Use `:h vim.lsp.config()` or 'after/lsp/' directory to configure servers.
-  -- Uncomment and tweak the following `vim.lsp.enable()` call to enable servers.
-  -- vim.lsp.enable({
-  --   -- For example, if `lua-language-server` is installed, use `'lua_ls'` entry
-  -- })
-end)
-
+-- inside 'neovim/nvim-lspconfig' plugin
 -- Formatting =================================================================
 
 -- Programs dedicated to text formatting (a.k.a. formatters) are very useful.
@@ -336,3 +299,8 @@ later(function()
   add('windwp/nvim-ts-autotag')
   require('nvim-ts-autotag').setup()
 end)
+now_if_args(function()
+  vim.lsp.enable({ 'vtsls' })
+end)
+
+
