@@ -86,7 +86,7 @@ end
 -- is started like `nvim -- path/to/file`, otherwise delaying setup is fine
 _G.Config.now_if_args = vim.fn.argc(-1) > 0 and MiniDeps.now or MiniDeps.later
 vim.opt.clipboard = "unnamedplus"
-vim.keymap.set({ 'n', 'i', 'v' }, '<C-s>', '<cmd>w<cr>', { desc = 'Save file' })
+vim.keymap.set({ 'n', 'i', 'v' }, '<C-s>', '<cmd>w!<cr>', { desc = 'Save file' })
 
 
 

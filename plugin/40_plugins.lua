@@ -37,54 +37,60 @@ local now_if_args = _G.Config.now_if_args
 --   `vimdoc`, `markdown`, etc.), manually install them via 'nvim-treesitter'
 --   with `:TSInstall <language>`. Be sure to have necessary system dependencies
 --   (see MiniMax README section for software requirements).
+
+-- Tree-sitter ================================================================
 now_if_args(function()
   add({
     source = 'nvim-treesitter/nvim-treesitter',
-    -- Update tree-sitter parser after plugin is updated
     hooks = { post_checkout = function() vim.cmd('TSUpdate') end },
   })
   add({
     source = 'nvim-treesitter/nvim-treesitter-textobjects',
-    -- Use `main` branch since `master` branch is frozen, yet still default
-    -- It is needed for compatibility with 'nvim-treesitter' `main` branch
     checkout = 'main',
   })
 
-  -- Define languages which will have parsers installed and auto enabled
-  -- After changing this, restart Neovim once to install necessary parsers. Wait
-  -- for the installation to finish before opening a file for added language(s).
-  local languages = {
-    -- These are already pre-installed with Neovim. Used as an example.
-    'lua',
-    'vimdoc',
-    'markdown',
-    'javascript',
-    'typescript',
-    'tsx',
-    'html',
-    'css',
-    -- Add here more languages with which you want to use tree-sitter
-    -- To see available languages:
-    -- - Execute `:=require('nvim-treesitter').get_available()`
-    -- - Visit 'SUPPORTED_LANGUAGES.md' file at
-    --   https://github.com/nvim-treesitter/nvim-treesitter/blob/main
-  }
-  local isnt_installed = function(lang)
-    return #vim.api.nvim_get_runtime_file('parser/' .. lang .. '.*', false) == 0
-  end
-  local to_install = vim.tbl_filter(isnt_installed, languages)
-  if #to_install > 0 then require('nvim-treesitter').install(to_install) end
+  -- 1. Tạo thư mục cố định để lưu parser trong data của minimax
+  local parser_install_dir = vim.fn.stdpath('data') .. '/parsers'
+  vim.fn.mkdir(parser_install_dir, 'p')
 
-  -- Enable tree-sitter after opening a file for a target language
+  -- 2. QUAN TRỌNG: Thêm đường dẫn này vào đầu runtimepath ngay lập tức
+  -- Nếu không có dòng này, Neovim sẽ không thấy parser đã cài và sẽ tải lại mãi mãi.
+  vim.opt.runtimepath:prepend(parser_install_dir)
+
+  -- 3. Cấu hình an toàn sử dụng pcall (tránh lỗi module not found)
+  local configure_ts = function()
+    local ok, configs = pcall(require, 'nvim-treesitter.configs')
+    if not ok then return end
+
+    configs.setup({
+      -- Ép Treesitter luôn cài vào thư mục chúng ta đã định nghĩa
+      parser_install_dir = parser_install_dir,
+      
+      ensure_installed = {
+        'lua', 'vimdoc', 'markdown', 'javascript', 'typescript', 'tsx', 'html', 'css'
+      },
+      highlight = { enable = true },
+      indent = { enable = true },
+    })
+  end
+
+  -- Chạy cấu hình sau khi Neovim đã ổn định
+  vim.schedule(configure_ts)
+
+  -- 4. Logic kích hoạt highlight theo filetype (giữ nguyên của bạn nhưng thêm bảo vệ)
+  local languages = { 'lua', 'vimdoc', 'markdown', 'javascript', 'typescript', 'tsx', 'html', 'css' }
   local filetypes = {}
   for _, lang in ipairs(languages) do
-    for _, ft in ipairs(vim.treesitter.language.get_filetypes(lang)) do
-      table.insert(filetypes, ft)
+    local ok, ft_list = pcall(vim.treesitter.language.get_filetypes, lang)
+    if ok then
+      for _, ft in ipairs(ft_list) do table.insert(filetypes, ft) end
     end
   end
-  local ts_start = function(ev) vim.treesitter.start(ev.buf) end
+  
+  local ts_start = function(ev) pcall(vim.treesitter.start, ev.buf) end
   _G.Config.new_autocmd('FileType', filetypes, ts_start, 'Start tree-sitter')
 end)
+
 
 -- Language servers ===========================================================
 
