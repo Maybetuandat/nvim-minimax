@@ -58,6 +58,11 @@ now_if_args(function()
     'lua',
     'vimdoc',
     'markdown',
+    'javascript',
+    'typescript',
+    'tsx',
+    'html',
+    'css',
     -- Add here more languages with which you want to use tree-sitter
     -- To see available languages:
     -- - Execute `:=require('nvim-treesitter').get_available()`
@@ -98,7 +103,30 @@ end)
 -- Add it now if file (and not 'mini.starter') is shown after startup.
 now_if_args(function()
   add('neovim/nvim-lspconfig')
+  
+  local lspconfig = require('lspconfig')
+  local capabilities = vim.lsp.protocol.make_client_capabilities()
+  -- Nếu sau này bạn cài nvim-cmp, hãy thêm dòng này:
+  -- capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
+  -- Cấu hình vtsls cho React
+  lspconfig.vtsls.setup({
+    capabilities = capabilities,
+    settings = {
+      typescript = {
+        suggest = {
+          completeFunctionCalls = true,
+        },
+        updateImportsOnFileMove = { enabled = "always" },
+      },
+      javascript = {
+        suggest = {
+          completeFunctionCalls = true,
+        },
+        updateImportsOnFileMove = { enabled = "always" },
+      },
+    },
+  })
   -- Use `:h vim.lsp.enable()` to automatically enable language server based on
   -- the rules provided by 'nvim-lspconfig'.
   -- Use `:h vim.lsp.config()` or 'after/lsp/' directory to configure servers.
@@ -281,3 +309,30 @@ require('peek').setup({
 vim.api.nvim_create_user_command('PeekOpen', require('peek').open, {})
 vim.api.nvim_create_user_command('PeekClose', require('peek').close, {})
 
+later(function()
+  -- Các plugin cần thiết cho việc gợi ý
+  add('hrsh7th/nvim-cmp')
+  add('hrsh7th/cmp-nvim-lsp')
+  add('hrsh7th/cmp-buffer')
+  add('hrsh7th/cmp-path')
+  add('saadparwaiz1/cmp_luasnip') -- Nếu bạn dùng luasnip/mini.snippets
+
+  local cmp = require('cmp')
+  cmp.setup({
+    mapping = cmp.mapping.preset.insert({
+      ['<C-Space>'] = cmp.mapping.complete(),
+      ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Nhấn Enter để chọn và tự động import
+      ['<Tab>'] = cmp.mapping.select_next_item(),
+    }),
+    sources = cmp.config.sources({
+      { name = 'nvim_lsp' },
+      { name = 'path' },
+      { name = 'buffer' },
+    })
+  })
+end)
+
+later(function()
+  add('windwp/nvim-ts-autotag')
+  require('nvim-ts-autotag').setup()
+end)
