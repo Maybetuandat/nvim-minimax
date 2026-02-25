@@ -125,6 +125,23 @@ later(function()
       -- Allow formatting from LSP server if no dedicated formatter is available
       lsp_format = 'fallback',
     },
+     formatters_by_ft = {
+      javascript      = { 'prettier' },
+      javascriptreact = { 'prettier' },
+      typescript      = { 'prettier' },
+      typescriptreact = { 'prettier' },
+      vue             = { 'prettier' },
+      html            = { 'prettier' },
+      css             = { 'prettier' },
+      scss            = { 'prettier' },
+      json            = { 'prettier' },
+      markdown        = { 'prettier' },
+      python          = { 'isort', 'black' },
+    },
+    format_on_save = {
+      timeout_ms = 2000,
+      lsp_format = 'fallback',
+    },
     -- Map of filetype to formatters
     -- Make sure that necessary CLI tool is available
     -- formatters_by_ft = { lua = { 'stylua' } },
@@ -249,7 +266,21 @@ local add = MiniDeps.add
 
 -- Trình quản lý LSP, Linters, Formatters
 add({ source = 'williamboman/mason.nvim' })
+
+add('WhoIsSethDaniel/mason-tool-installer.nvim')
+require('mason-tool-installer').setup({
+  ensure_installed = {
+    'prettier',
+    'black',
+    'isort',
+  },
+})
+
+
 add({ source = 'williamboman/mason-lspconfig.nvim' })
+
+
+
 
 -- Cấu hình LSP mặc định của Neovim
 add({ 
